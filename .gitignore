@@ -1,0 +1,59 @@
+# Ignorar diretórios binários gerados pelo compilador .NET
+**/bin/
+**/obj/
+
+# Ignorar arquivos de configuração do Visual Studio
+.vscode/
+.vs/
+_resharper/
+
+# Ignorar arquivos de configuração do Visual Studio Code
+.vscode/settings.json
+
+# Ignorar arquivos de cache do Visual Studio Code
+.vscode/cache
+.vscode/cachedData
+
+# Ignorar arquivos de log e crash reports do Visual Studio
+*.log
+*.vsix
+*.nupkg
+*.pfx
+*.snk
+
+# Ignorar arquivos de build
+[Bb]in/
+[Ii]nt/
+
+# Ignorar diretórios de pacotes de gerenciamento de pacotes
+packages/
+node_modules/
+
+# Ignorar arquivos de saída de teste
+[Tt]est[Rr]esult*/
+*.xml
+*.swp
+
+# Ignorar arquivos de saída de cobertura de código
+*.opencover.xml
+*.coverage
+
+# Ignorar arquivos de log e erros do NCrunch
+_NCrunch_*
+*.ncrunch*
+.*crunch*.local.xml
+
+# Configurações de exclusão específicas para o projeto MassTransit.Core
+MassTransit.Core/bin/
+MassTransit.Core/obj/
+MassTransit.Core/packages/
+
+# Configurações de exclusão específicas para o projeto MassTransit.Web.API
+MassTransit.Web.API/bin/
+MassTransit.Web.API/obj/
+MassTransit.Web.API/packages/
+
+# Configurações de exclusão específicas para o projeto MassTransit.Worker
+MassTransit.Worker/bin/
+MassTransit.Worker/obj/
+MassTransit.Worker/packages/
