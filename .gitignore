@@ -57,3 +57,4 @@ MassTransit.Web.API/packages/
 MassTransit.Worker/bin/
 MassTransit.Worker/obj/
 MassTransit.Worker/packages/
+MassTransit.Worker/.vs
