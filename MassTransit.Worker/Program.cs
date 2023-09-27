@@ -2,9 +2,10 @@ using MassTransit;
 using MassTransit.Core;
 using MassTransit.Core.Events;
 using MassTransit.Core.Extensions;
+using MassTransit.Core.Models;
 using MassTransit.Worker.Consumers;
-using MassTransit.Worker.ConsumersDefinitions;
 using Microsoft.AspNetCore.Builder;
+using RabbitMQ.Client;
 using Serilog;
 
 try
@@ -28,10 +29,10 @@ try
             collection.AddMassTransit(x =>
             {
                 x.AddDelayedMessageScheduler();
-                x.AddConsumer<TimeVideoJobConsumer>(typeof(TimerVideoConsumerDefinition));
-                x.AddConsumer<QueueNFeInsertedConsumer>(typeof(QueueNfeConsumerDefinition));
-                x.AddConsumer<QueueVerifyStatusNfeConsumer>(typeof(QueueVerifyStatusNfeConsumerDefinition));
-                x.AddRequestClient<ConvertVideoEvent>();
+                //x.AddConsumer<TimeVideoJobConsumer>(typeof(TimerVideoConsumerDefinition));
+                //x.AddConsumer<QueueNFeInsertedConsumer>(typeof(QueueNfeConsumerDefinition));
+                //x.AddConsumer<QueueVerifyStatusNfeConsumer>(typeof(QueueVerifyStatusNfeConsumerDefinition));
+                //x.AddRequestClient<ConvertVideoEvent>();
 
                 x.SetKebabCaseEndpointNameFormatter();
 
@@ -39,17 +40,63 @@ try
                 {
                     cfg.Host(appSettings.connectionStringsRabbitMq);
                     cfg.UseDelayedMessageScheduler();
-                    cfg.ServiceInstance(instance =>
-                    {
-                        instance.ConfigureJobServiceEndpoints();
-                        instance.ConfigureEndpoints(ctx, new KebabCaseEndpointNameFormatter("dev", false));
-                    });
+                    //cfg.ServiceInstance(instance =>
+                    //{
+                    //    instance.ConfigureJobServiceEndpoints();
+                    //    instance.ConfigureEndpoints(ctx, new KebabCaseEndpointNameFormatter("dev", false));
+                    //});
+
+                    cfg.Message<VerifyStatusNFeEvent>(x => x.SetEntityName("medical_reports.retry.exchange"));
                     cfg.Publish<VerifyStatusNFeEvent>(x =>
                     {
-                        x.Durable = true;
-                        x.AutoDelete = true;
-                        x.ExchangeType = "direct";
+                        x.ExchangeType = ExchangeType.Direct;
+                        x.BindQueue(
+                            "medical_reports.retry.exchange",
+                            "medical_reports.retry.xpto",
+                            config =>
+                            {
+                                config.ExchangeType = ExchangeType.Direct;
+                            });
                     });
+
+                    cfg.SendTopology.ErrorQueueNameFormatter = new ErrorNameFormater(
+                                queueErrorBinds: new Dictionary<string, string>() {
+                                    //{ "medical_reports.created.xpto", "medical_reports.retry.exchange"},
+                                    { "medical_reports.retry.xpto", "medical_reports.failed.xpto"},
+                                });
+
+                    var log = ctx.CreateScope().ServiceProvider.GetService<ILogger<QueueNFeInsertedConsumer>>();
+                    cfg.ReceiveEndpoint("medical_reports.created.xpto", e =>
+                    {
+                        e.Consumer(() => new QueueNFeInsertedConsumer(log));
+                        e.ExchangeType = ExchangeType.Direct;
+                        e.BindQueue = false;
+                        e.ConfigureConsumeTopology = false;
+                        e.PublishFaults = false;
+                        e.Bind("medical_reports.direct.exchange", config =>
+                        {
+                            config.ExchangeType = ExchangeType.Direct;
+                        });
+                    });
+
+                    var logVerify = ctx.CreateScope().ServiceProvider.GetService<ILogger<QueueVerifyStatusNfeConsumer>>();
+                    cfg.ReceiveEndpoint("medical_reports.retry.xpto", e =>
+                    {
+                        e.Consumer(() => new QueueVerifyStatusNfeConsumer(logVerify));
+                        e.ExchangeType = ExchangeType.Direct;
+                        e.BindQueue = false;
+                        e.ConfigureConsumeTopology = false;
+                        e.PublishFaults = false;
+                        e.Bind("medical_reports.retry.exchange", config =>
+                        {
+                            config.ExchangeType = ExchangeType.Direct;
+                        });
+                        e.UseMessageRetry(config =>
+                        {
+                            config.Incremental(3, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+                        });
+                    });
+
                 });
             });
         })
