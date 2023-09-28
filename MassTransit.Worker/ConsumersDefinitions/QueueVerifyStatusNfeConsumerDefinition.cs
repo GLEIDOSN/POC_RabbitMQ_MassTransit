@@ -10,6 +10,10 @@ namespace MassTransit.Worker.ConsumersDefinitions
         {
             consumerConfigurator.UseMessageRetry(retry => retry.Interval(3, TimeSpan.FromSeconds(3)));
             endpointConfigurator.UseInMemoryOutbox(context);
+            endpointConfigurator.ConfigureConsumeTopology = false;
+            endpointConfigurator.PublishFaults = false;
+            //TO-do: Configurar manualmente
+
         }
     }
 }
