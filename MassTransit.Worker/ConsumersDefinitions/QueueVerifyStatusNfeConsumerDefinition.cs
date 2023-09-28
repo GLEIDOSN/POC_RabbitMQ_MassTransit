@@ -14,7 +14,6 @@ namespace MassTransit.Worker.ConsumersDefinitions
             endpointConfigurator.PublishFaults = false;
             //TO-do: Configurar manualmente
 
-
         }
     }
 }
