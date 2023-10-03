@@ -1,0 +1,29 @@
+Comando que mostra toda a configuração do RabbitMq e Configurações:
+rabbitmq-diagnostics status
+
+Mostra as portas ouvintes habilitados para TLS:
+rabbitmq-diagnostics listeners
+
+Repo que gera certificados (TLS (SSL, x.509) Certificate Generator):
+https://github.com/rabbitmq/tls-gen
+Instalar as dependencias
+Make
+https://coffops.com/usando-comando-make-projetos-windows/
+Python 
+windows store
+OpenSSL
+https://slproweb.com/download/Win64OpenSSL-3_1_3.exe
+
+Depois fazer os passos:
+cd tls-gen/basic
+# private key password
+make PASSWORD=bunnies
+make verify
+make info
+ls -l ./result
+
+Documentação do RabbitMQ:
+https://www.rabbitmq.com/ssl.html#dotnet-client
+
+
+

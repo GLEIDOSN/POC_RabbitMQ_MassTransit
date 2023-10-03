@@ -1,7 +1,9 @@
 ﻿using MassTransit.Core.Events;
+using MassTransit.Core.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
+using System.Security.Authentication;
 
 namespace MassTransit.Core.Extensions
 {
@@ -9,6 +11,8 @@ namespace MassTransit.Core.Extensions
     {
         public static void AddMassTransitExtension(this IServiceCollection services, IConfiguration configuration)
         {
+            var projectRootPath = Directory.GetCurrentDirectory(); // Este é o diretório atual do seu aplicativo
+
             services.AddMassTransit(x =>
             {
                 x.AddDelayedMessageScheduler();
@@ -16,7 +20,26 @@ namespace MassTransit.Core.Extensions
 
                 x.UsingRabbitMq((ctx, cfg) =>
                 {
-                    cfg.Host(configuration.GetSection("ConnectionStringsRabbitMq:RabbitMq").Value);
+                    var rabbitMqCfg = configuration.GetSection("RabbitMqConnection").Get<RabbitMqConnection>();
+
+                    cfg.Host(rabbitMqCfg.HostName, (rabbitMqCfg.UseSSL ? rabbitMqCfg.PortSSL : rabbitMqCfg.Port), "/", h =>
+                    {
+                        h.Username(rabbitMqCfg.UserName);
+                        h.Password(rabbitMqCfg.Password);
+
+                        if (rabbitMqCfg.UseSSL)
+                        {
+                            h.UseSsl(s =>
+                            {
+                                var certificatePath = Path.Combine(projectRootPath, rabbitMqCfg.CertificatePath);
+
+                                s.ServerName = System.Net.Dns.GetHostName();
+                                s.CertificatePath = certificatePath;
+                                s.CertificatePassphrase = rabbitMqCfg.CertificatePassphrase;
+                                s.Protocol = SslProtocols.Tls12;
+                            });
+                        }
+                    });
 
                     cfg.UseDelayedMessageScheduler();
 
@@ -32,9 +55,6 @@ namespace MassTransit.Core.Extensions
                                 config.ExchangeType = ExchangeType.Direct;
                             });
                     });
-
-                    //cfg.ConfigureEndpoints(ctx, new KebabCaseEndpointNameFormatter("dev", false));
-                    //cfg.UseMessageRetry(retry => { retry.Interval(3, TimeSpan.FromSeconds(5)); });
                 });
             });
         }

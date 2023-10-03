@@ -13,7 +13,6 @@ namespace MassTransit.Worker.ConsumersDefinitions
             endpointConfigurator.ConfigureConsumeTopology = false;
             endpointConfigurator.PublishFaults = false;
             //TO-do: Configurar manualmente
-
         }
     }
 }
