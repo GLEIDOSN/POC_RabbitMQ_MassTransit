@@ -25,6 +25,8 @@ namespace MassTransit.Worker.Consumers
                 if (context.Message.Status == EnumStatusNFe.Pending)
                 {
                     await context.Publish(new VerifyStatusNFeEvent(nfe.Id, nfe.Status));
+                    _logger.LogInformation($"Status Nfe is Pending, sent to VerifyStatus Queue: {nfe.Id} - {nfe.ClientName}");
+                    return;
                 }
 
                 _logger.LogInformation($"Receive NFe: {nfe.Id} - {nfe.ClientName}");

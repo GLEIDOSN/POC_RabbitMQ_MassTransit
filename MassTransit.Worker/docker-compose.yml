@@ -1,0 +1,14 @@
+version: '3'
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    ports:
+      - "5672:5672"  # Porta padrão para conexões não seguras
+      - "15672:15672"  # Porta para o painel de gerenciamento
+      - "5671:5671"  # Porta para conexões SSL/TLS
+    volumes:
+      - ./Certs_tls-gen/ca_certificate.pem:/etc/Certs_tls-gen/ca_certificate.pem
+      - ./Certs_tls-gen/server_atlantico03753_certificate.pem:/etc/Certs_tls-gen/server_atlantico03753_certificate.pem
+      - ./Certs_tls-gen/server_atlantico03753_key.pem:/etc/Certs_tls-gen/server_atlantico03753_key.pem
+      - ./Certs_tls-gen/10-defaults.conf:/etc/rabbitmq/conf.d/10-defaults.conf
+    command: sh -c "chmod 644 /etc/Certs_tls-gen/ca_certificate.pem && chmod 644 /etc/Certs_tls-gen/server_atlantico03753_certificate.pem && chmod 644 /etc/Certs_tls-gen/server_atlantico03753_key.pem && rabbitmq-server"
