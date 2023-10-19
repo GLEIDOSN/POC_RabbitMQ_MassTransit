@@ -1,0 +1,55 @@
+version: '3'
+services: 
+  masstransitwebapi:
+    build:
+      context: .
+      dockerfile: MassTransit.Web.API/Dockerfile
+    ports:
+      - "5002:80"
+    volumes:
+      - ./MassTransit.Web.API/Certs_tls-gen/client_atlantico03753.p12:/app/Certs_tls-gen/client_atlantico03753.p12
+    depends_on:
+      - rabbitmq
+    environment:
+      RabbitMQ__Host: "rabbitmq"
+    networks: 
+      - network
+   
+  masstransitworker:
+    build:
+      context: .
+      dockerfile: MassTransit.Worker/Dockerfile
+    ports:
+      - "5000:80"
+    volumes:
+      - ./MassTransit.Worker/Certs_tls-gen/client_atlantico03753.p12:/app/Certs_tls-gen/client_atlantico03753.p12
+    depends_on:
+      - rabbitmq
+    environment:
+      RabbitMQ__Host: "rabbitmq"
+    networks: 
+      - network
+            
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq-app
+    ports:
+      - "5672:5672"  # Porta padrão para conexões não seguras
+      - "15672:15672"  # Porta para o painel de gerenciamento
+      - "5671:5671"  # Porta para conexões SSL/TLS
+      - "4369:4369"
+      - "25672:25672"
+      - "15671:15671"
+    volumes:
+      - ./MassTransit.Worker/Certs_tls-gen/ca_certificate.pem:/etc/Certs_tls-gen/ca_certificate.pem
+      - ./MassTransit.Worker/Certs_tls-gen/server_atlantico03753_certificate.pem:/etc/Certs_tls-gen/server_atlantico03753_certificate.pem
+      - ./MassTransit.Worker/Certs_tls-gen/server_atlantico03753_key.pem:/etc/Certs_tls-gen/server_atlantico03753_key.pem
+      - ./MassTransit.Worker/Certs_tls-gen/10-defaults.conf:/etc/rabbitmq/conf.d/10-defaults.conf
+      - ./MassTransit.Worker/Certs_tls-gen/testssl:/etc/Certs_tls-gen/testssl
+    command: sh -c "chmod 644 /etc/Certs_tls-gen/ca_certificate.pem && chmod 644 /etc/Certs_tls-gen/server_atlantico03753_certificate.pem && chmod 644 /etc/Certs_tls-gen/server_atlantico03753_key.pem && rabbitmq-server"    
+    networks: 
+      - network
+
+networks: 
+  network:
+    driver: bridge

@@ -33,10 +33,10 @@ namespace MassTransit.Core.Extensions
                             {
                                 var certificatePath = Path.Combine(projectRootPath, rabbitMqCfg.CertificatePath);
 
-                                s.ServerName = System.Net.Dns.GetHostName();
+                                s.ServerName = rabbitMqCfg.HostName;
                                 s.CertificatePath = certificatePath;
                                 s.CertificatePassphrase = rabbitMqCfg.CertificatePassphrase;
-                                s.Protocol = SslProtocols.Tls12;
+                                s.Protocol = SslProtocols.Tls13;
                             });
                         }
                     });

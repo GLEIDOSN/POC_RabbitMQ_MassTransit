@@ -22,7 +22,7 @@ try
             var rabbitMqCfg = context.Configuration
                 .GetSection("RabbitMqConnection")
                 .Get<RabbitMqConnection>();
-            var projectRootPath = Directory.GetCurrentDirectory(); // Este é o diretório atual do seu aplicativo
+            var projectRootPath = Directory.GetCurrentDirectory(); // This is the current path of your application
 
             collection.AddHttpContextAccessor();
 
@@ -36,6 +36,11 @@ try
 
                 x.UsingRabbitMq((ctx, cfg) =>
                 {
+                    Console.WriteLine("Hostname: {0}", rabbitMqCfg.HostName);
+                    Console.WriteLine("Username: {0}", rabbitMqCfg.UserName);
+                    Console.WriteLine("Password: {0}", rabbitMqCfg.Password);
+                    Console.WriteLine("PortSSL: {0}", rabbitMqCfg.PortSSL);
+
                     cfg.Host(rabbitMqCfg.HostName, (rabbitMqCfg.UseSSL ? rabbitMqCfg.PortSSL : rabbitMqCfg.Port), "/", h =>
                     {
                         h.Username(rabbitMqCfg.UserName);
@@ -47,10 +52,13 @@ try
                             {
                                 var certificatePath = Path.Combine(projectRootPath, rabbitMqCfg.CertificatePath);
 
+                                Console.WriteLine("Path: {0}", certificatePath);
+                                Console.WriteLine("File: {0}", rabbitMqCfg.CertificatePath);
+
                                 s.ServerName = rabbitMqCfg.HostName;
                                 s.CertificatePath = certificatePath;
                                 s.CertificatePassphrase = rabbitMqCfg.CertificatePassphrase;
-                                s.Protocol = SslProtocols.Tls12;
+                                s.Protocol = SslProtocols.Tls13;
                             });
                         }
                     });
@@ -81,7 +89,7 @@ try
                         e.ExchangeType = ExchangeType.Direct;
                         e.ConfigureConsumeTopology = false;
                         e.PublishFaults = false;
-                        e.BindQueue = false;
+                        e.BindQueue = true;
                         e.Bind("medical_reports.direct.exchange", config =>
                         {
                             config.ExchangeType = ExchangeType.Direct;
@@ -94,7 +102,7 @@ try
                         e.ExchangeType = ExchangeType.Direct;
                         e.ConfigureConsumeTopology = false;
                         e.PublishFaults = false;
-                        e.BindQueue = false;
+                        e.BindQueue = true;
                         e.Bind("medical_reports.retry.exchange", config =>
                         {
                             config.ExchangeType = ExchangeType.Direct;
