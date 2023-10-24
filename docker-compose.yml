@@ -1,6 +1,7 @@
 version: '3'
 services: 
   masstransitwebapi:
+    container_name: masstransit-web-api
     build:
       context: .
       dockerfile: MassTransit.Web.API/Dockerfile
@@ -16,6 +17,7 @@ services:
       - network
    
   masstransitworker:
+    container_name: masstransit-worker
     build:
       context: .
       dockerfile: MassTransit.Worker/Dockerfile
