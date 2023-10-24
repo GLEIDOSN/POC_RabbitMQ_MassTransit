@@ -64,7 +64,7 @@ git --version
 apt-get install make
 ```
 
-**Iniciar testes com a aplicação testssl (o repositório foi copiado para dentro do docker junto com a pasta dos certificados), execute um por vez no terminal do docker, este teste é recomendável executar no terminal da imagem do docker rabbitmq-app:**
+**Iniciar testes com a aplicação testssl (o repositório já foi copiado para dentro do docker junto com a pasta dos certificados (comandos feitos no arquivo docker-compose.yml), execute um por vez no terminal do docker, este teste é recomendável executar no terminal da imagem do docker rabbitmq-app:**
 ```
 apt-get update
 apt-get install hexdump
